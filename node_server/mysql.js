@@ -4,7 +4,7 @@ const { formatObjectAsString, formatObjectAsFieldAndValue } = require('./utils')
 
 /**
  * mysql 查询数据
- * @param object condition 查询的条件
+ * @param string condition 查询的条件
  * @param {string|Array} field 查询的字段
  * @param string table 查询的表名
  * @param int page 第几页
@@ -13,22 +13,22 @@ const { formatObjectAsString, formatObjectAsFieldAndValue } = require('./utils')
  * @param string db 查询的数据库
  * @return object 返回查询到的数据的对象
  */
-const sqlSelect = (condition = {}, field, table, order = '', page, limit = '', db = '') => {
+const sqlSelect = (condition = '', field, table, order = '', page, limit = -1, db = '') => {
   return new Promise(async (resolve, reject) => {
-    const _condition = formatObjectAsString(condition, 'like', true)
+    // const _condition = formatObjectAsString(condition, 'and', true)
     const _field = Array.isArray(field) ? field.join(',') : field
-    let sql = `SELECT ${_field} FROM ${table}`
-    if (_condition) {
-      sql += ` WHERE ${_condition}`
+    let sql = `select ${_field} from ${table}`
+    if (condition) {
+      sql += ` where ${condition}`
     }
     if (order) {
-      sql += ` ORDER BY ${order}`
+      sql += ` order by ${order}`
     }
-    if (limit && page) {
-      sql += ` LIMIT ${(page - 1) * limit}, ${limit}`
+    if (limit && limit != -1 && page) {
+      sql += ` limit ${(page - 1) * limit}, ${limit}`
     }
     if (db) {
-      sql += ` FROM ${db}`
+      sql += ` from ${db}`
     }
     const total = await sqlCount('', _field, table)
     connection.query(sql, (err, result) => {
@@ -52,12 +52,12 @@ const sqlSelect = (condition = {}, field, table, order = '', page, limit = '', d
 const sqlSelectInfo = (condition = '', field, table, db = '') => {
   return new Promise(async (resolve, reject) => {
     const _field = Array.isArray(field) ? field.join(',') : field
-    let sql = `SELECT ${_field} FROM ${table}`
+    let sql = `select ${_field} from ${table}`
     if (condition) {
-      sql += ` WHERE ${condition}`
+      sql += ` where ${condition}`
     }
     if (db) {
-      sql += ` FROM ${db}`
+      sql += ` from ${db}`
     }
     connection.query(sql, (err, result) => {
       if (err) {
@@ -81,12 +81,12 @@ const sqlSelectInfo = (condition = '', field, table, db = '') => {
 const sqlCount = (condition = '', field, table, db = '') => {
   return new Promise((resolve, reject) => {
     const _field = Array.isArray(field) ? field.join(',') : field
-    let sql = `SELECT COUNT(${_field}) AS count FROM ${table}`
+    let sql = `select count(${_field}) as count from ${table}`
     if (condition) {
-      sql += ` WHERE ${condition}`
+      sql += ` where ${condition}`
     }
     if (db) {
-      sql += ` FROM ${db}`
+      sql += ` from ${db}`
     }
     connection.query(sql, (err, result) => {
       if (err) {
@@ -109,9 +109,9 @@ const sqlCount = (condition = '', field, table, db = '') => {
 const sqlInsert = (data, table, db = '') => {
   return new Promise((resolve, reject) => {
     const { field, value } = formatObjectAsFieldAndValue(data)
-    let sql = `INSERT INTO ${table} (${field}) VALUES (${value})`
+    let sql = `insert into ${table} (${field}) values (${value})`
     if (db) {
-      sql += ` FROM ${db}`
+      sql += ` from ${db}`
     }
     connection.query(sql, (err, result) => {
       if (err) {
@@ -135,12 +135,12 @@ const sqlInsert = (data, table, db = '') => {
 const sqlUpdate = (condition, data, table, db = '') => {
   return new Promise((resolve, reject) => {
     const _value = formatObjectAsString(data)
-    let sql = `UPDATE ${table} SET ${_value}`
+    let sql = `update ${table} set ${_value}`
     if (condition) {
-      sql += ` WHERE ${condition}`
+      sql += ` where ${condition}`
     }
     if (db) {
-      sql += ` FROM ${db}`
+      sql += ` from ${db}`
     }
     connection.query(sql, (err, result) => {
       if (err) {
@@ -162,12 +162,12 @@ const sqlUpdate = (condition, data, table, db = '') => {
 
 const sqlDelete = (condition, table, db = '') => {
   return new Promise((resolve, reject) => {
-    let sql = `DELETE FROM ${table}`
+    let sql = `delete from ${table}`
     if (condition) {
-      sql += ` WHERE ${condition}`
+      sql += ` where ${condition}`
     }
     if (db) {
-      sql += ` FROM ${db}`
+      sql += ` from ${db}`
     }
     connection.query(sql, (err, result) => {
       if (err) {

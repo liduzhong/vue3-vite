@@ -5,7 +5,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
